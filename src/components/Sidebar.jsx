@@ -19,8 +19,8 @@ export default function Sidebar({ children, onExpandedChange }) {
         {/* Header */}
         <div className="p-5 pb-2 flex justify-between items-center">
           <h1
-            className={`text-[26px] font-bold text-indigo-600 transition-all overflow-hidden ${
-              expanded ? "w-32 opacity-100" : "w-0 opacity-0"
+            className={`text-[30px] font-bold text-indigo-600 transition-all overflow-hidden ${
+              expanded ? "w-38 opacity-100" : "w-0 opacity-0"
             }`}
           >
             BOOKSHELF

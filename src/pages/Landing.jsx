@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import coverImage from "../assets/cover.png";
 
 function Landing() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -36,7 +39,10 @@ function Landing() {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <button className="px-8 py-4 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                  <button 
+                    onClick={() => navigate('/books')}
+                    className="px-8 py-4 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
                     Browse Books
                   </button>
                   <button className="px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-indigo-600 hover:text-indigo-600 transition-all duration-300">
@@ -163,6 +169,154 @@ function Landing() {
         </div>
       </section>
 
+      {/* Register as Seller Section - NEW */}
+      <section className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mr-2 animate-pulse"></span>
+                  Join Our Marketplace
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  Become a <span className="text-orange-600">Book Seller</span> on BookShelf
+                </h2>
+                
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Turn your passion for books into a thriving business. Join thousands of sellers who are already earning by sharing great reads with our community.
+                </p>
+              </div>
+
+              {/* Benefits */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Zero Commission Fees</h4>
+                    <p className="text-gray-600">Keep 100% of your earnings - no hidden charges or commission fees.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Easy Management</h4>
+                    <p className="text-gray-600">Simple dashboard to manage inventory, orders, and customer communications.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Wide Reach</h4>
+                    <p className="text-gray-600">Access to thousands of book lovers and readers nationwide.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">24/7 Support</h4>
+                    <p className="text-gray-600">Dedicated seller support team to help you grow your business.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => navigate('/sellerRegister')}
+                  className="px-8 py-4 bg-orange-600 text-white font-semibold rounded-full hover:bg-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Start Selling Today
+                </button>
+                <button className="px-8 py-4 border-2 border-orange-600 text-orange-600 font-semibold rounded-full hover:bg-orange-600 hover:text-white transition-all duration-300">
+                  Learn More
+                </button>
+              </div>
+            </div>
+
+            {/* Right Content - Statistics & Visual */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-green-700">$2,500+</div>
+                    <div className="text-sm text-green-600">Avg Monthly Earnings</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-700">98%</div>
+                    <div className="text-sm text-blue-600">Seller Satisfaction</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-700">1,000+</div>
+                    <div className="text-sm text-purple-600">Active Sellers</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-orange-700">24hrs</div>
+                    <div className="text-sm text-orange-600">Quick Approval</div>
+                  </div>
+                </div>
+
+                {/* Process Steps */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 text-center mb-4">Quick Setup Process</h4>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <span className="text-gray-700">Register your seller account</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <span className="text-gray-700">Complete business verification</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <span className="text-gray-700">Add your first book listing</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                    <span className="text-gray-700">Start earning immediately!</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 px-3 py-2 rounded-full text-sm font-bold shadow-lg transform rotate-12">
+                💰 Earn More
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-green-400 text-green-900 px-3 py-2 rounded-full text-sm font-bold shadow-lg transform -rotate-12">
+                🚀 Get Started
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Popular Categories */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -255,10 +409,16 @@ function Landing() {
             Join thousands of happy readers and discover your next favorite book today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-white text-indigo-600 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button 
+              onClick={() => navigate('/books')}
+              className="px-8 py-4 bg-white text-indigo-600 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
               Browse Books Now
             </button>
-            <button className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-indigo-600 transition-all duration-300">
+            <button 
+              onClick={() => navigate('/signup')}
+              className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-indigo-600 transition-all duration-300"
+            >
               Sign Up Free
             </button>
           </div>
@@ -294,6 +454,16 @@ function Landing() {
                 <li><a href="#" className="hover:text-white transition-colors">Categories</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Bestsellers</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">New Arrivals</a></li>
+                <li><a 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/signup');
+                  }}
+                  className="hover:text-white transition-colors"
+                >
+                  Become a Seller
+                </a></li>
               </ul>
             </div>
 

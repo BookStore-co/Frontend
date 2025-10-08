@@ -13,17 +13,17 @@ import {
   Settings,
   History,
   BadgeDollarSign,
-  Megaphone
+  Megaphone,
 } from "lucide-react";
 
 function SellerDashboard() {
   const [user, setUser] = useState(null);
   const [sidebarExpanded, setSidebarExpanded] = useState(true); // Track sidebar state
   const navigate = useNavigate();
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -63,10 +63,8 @@ function SellerDashboard() {
         <SidebarItem text="Sales" icon={<BadgeDollarSign />} />
         <SidebarItem text="Announcement" icon={<Megaphone />} />
         <hr className="text-gray-200 mt-3 border-t-2" />
-        <SidebarItem text="Logout" icon={<LogOut />} onclick={handleLogout} />
+        <SidebarItem text="Logout" icon={<LogOut />} onClick={handleLogout} />
         <SidebarItem text="Setting" icon={<Settings />} />
-
-        
       </Sidebar>
 
       {/* Dynamic padding based on sidebar state */}
@@ -82,7 +80,6 @@ function SellerDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">
                 {user ? `Welcome back, ${user.name}!` : "Loading..."}
               </h1>
-              
             </div>
 
             {/* Profile Icon on the right - non-clickable */}

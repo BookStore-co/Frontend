@@ -1,24 +1,42 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Added: Import useNavigate
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ Added: Import useLocation
 import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(false);
   const [user, setUser] = useState(null);
-  
-  const navigate = useNavigate(); // ✅ Added: Initialize navigate
+
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ Added: Get current location
+
+  // ✅ Updated: Check if user is on landing page
+  const isLandingPage =
+    location.pathname === "/" || location.pathname === "/home";
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const viewportHeight = window.innerHeight;
-      setShowNavbar(scrollTop > viewportHeight);
+
+      // ✅ Updated: Only apply scroll logic on landing page
+      if (isLandingPage) {
+        setShowNavbar(scrollTop > viewportHeight);
+      } else {
+        setShowNavbar(true); // Always show on other pages
+      }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    // ✅ Updated: Set initial navbar visibility based on page
+    if (isLandingPage) {
+      setShowNavbar(false); // Hidden initially on landing page
+      window.addEventListener("scroll", handleScroll);
+    } else {
+      setShowNavbar(true); // Always visible on other pages
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isLandingPage]); // ✅ Added: Dependency on isLandingPage
 
   // Check token on mount
   useEffect(() => {
@@ -87,7 +105,7 @@ const Navbar = () => {
 
   // ✅ Added: Handle avatar click to navigate to dashboard
   const handleAvatarClick = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -178,7 +196,7 @@ const Navbar = () => {
 
             {/* ✅ Updated: Clickable Profile section */}
             {user ? (
-              <div 
+              <div
                 className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors duration-200"
                 onClick={handleAvatarClick} // ✅ Added: Click handler
                 title="Go to Dashboard" // ✅ Added: Tooltip
@@ -191,13 +209,18 @@ const Navbar = () => {
                   Hi, {user.name}
                 </span>
                 {/* ✅ Added: Dashboard icon indicator */}
-                <svg 
-                  className="w-4 h-4 text-gray-400 hidden sm:block" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-4 h-4 text-gray-400 hidden sm:block"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </div>
             ) : (
@@ -278,7 +301,7 @@ const Navbar = () => {
             {/* ✅ Updated: Mobile profile section with dashboard navigation */}
             <div className="pt-4 border-t border-gray-100">
               {user ? (
-                <div 
+                <div
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200"
                   onClick={() => {
                     handleAvatarClick();
@@ -293,13 +316,18 @@ const Navbar = () => {
                       Hi, {user.name}
                     </span>
                   </div>
-                  <svg 
-                    className="w-5 h-5 text-gray-400" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </div>
               ) : (
