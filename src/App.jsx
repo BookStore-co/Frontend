@@ -14,6 +14,10 @@ import Profile from "./pages/Profile";
 import BookPage from "./pages/BookPage";
 import ShowBooks from "./pages/ShowBooks";
 import AddBook from "./pages/AddBook";
+import BookDetail from "./pages/BookDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Address from "./pages/Address";
 function App() {
   return (
     <Router>
@@ -31,6 +35,10 @@ function App() {
           <Route path="/profile/:sellerId" element={<Profile />} />
           <Route path="/books" element={<ShowBooks />} />
           <Route path="/addBook" element={<AddBook />} />
+          <Route path="/bookDetail/:id" element={<BookDetail />} />
+          <Route path="/Cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/Address" element={<Address />} />
           {/* Update this line */}
         </Routes>
       </div>

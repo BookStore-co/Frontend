@@ -1,44 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ Added: Import useLocation
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../api/axiosInstance";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(false);
   const [user, setUser] = useState(null);
-
+  const [cartItemCount, setCartItemCount] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Added: Get current location
+  const location = useLocation();
 
-  // ✅ Updated: Check if user is on landing page
   const isLandingPage =
     location.pathname === "/" || location.pathname === "/home";
+  const isDashboardPage = location.pathname.startsWith("/dashboard");
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const viewportHeight = window.innerHeight;
 
-      // ✅ Updated: Only apply scroll logic on landing page
       if (isLandingPage) {
         setShowNavbar(scrollTop > viewportHeight);
-      } else {
-        setShowNavbar(true); // Always show on other pages
+      } else if (!isDashboardPage) {
+        setShowNavbar(true);
       }
     };
 
-    // ✅ Updated: Set initial navbar visibility based on page
-    if (isLandingPage) {
-      setShowNavbar(false); // Hidden initially on landing page
+    if (isDashboardPage) {
+      setShowNavbar(false);
+    } else if (isLandingPage) {
+      setShowNavbar(false);
       window.addEventListener("scroll", handleScroll);
     } else {
-      setShowNavbar(true); // Always visible on other pages
+      setShowNavbar(true);
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isLandingPage]); // ✅ Added: Dependency on isLandingPage
+  }, [isLandingPage, isDashboardPage]);
 
-  // Check token on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -46,7 +46,6 @@ const Navbar = () => {
         const decoded = jwtDecode(token);
         console.log("Decoded token:", decoded);
 
-        // Check if token is expired
         const currentTime = Date.now() / 1000;
         if (decoded.exp < currentTime) {
           console.log("Token expired");
@@ -55,7 +54,6 @@ const Navbar = () => {
           return;
         }
 
-        // Set user data from token
         setUser({
           name: decoded.name || "User",
           id: decoded.id,
@@ -69,7 +67,49 @@ const Navbar = () => {
     }
   }, []);
 
-  // Listen for auth state changes
+  // Fixed cart item count function
+  const fetchCartItemCount = async () => {
+    if (!user) {
+      setCartItemCount(0);
+      return;
+    }
+
+    try {
+      const endpoint = "/cart/showInCart";
+      const response = await axiosInstance.get(endpoint);
+      const items = response.data?.Items || [];
+      setCartItemCount(items.length);
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+      setCartItemCount(0);
+    }
+  };
+
+  // Fetch cart count when user changes or component mounts
+  useEffect(() => {
+    if (user) {
+      fetchCartItemCount();
+    } else {
+      setCartItemCount(0);
+    }
+  }, [user]);
+
+  // Listen for cart updates
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      if (user) {
+        fetchCartItemCount();
+      }
+    };
+
+    // Custom event listener for cart updates
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, [user]);
+
   useEffect(() => {
     const handleAuthChange = () => {
       const token = localStorage.getItem("token");
@@ -103,10 +143,22 @@ const Navbar = () => {
     };
   }, []);
 
-  // ✅ Added: Handle avatar click to navigate to dashboard
   const handleAvatarClick = () => {
     navigate("/dashboard");
   };
+
+  const handleCartClick = () => {
+    if (user) {
+      navigate("/cart");
+    } else {
+      navigate("/login");
+    }
+  };
+
+  // Don't render navbar on dashboard pages
+  if (isDashboardPage) {
+    return null;
+  }
 
   return (
     <nav
@@ -116,43 +168,44 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-indigo-600">BOOKSHELF</h1>
+          <Link to="/" className="text-2xl font-bold text-indigo-600">
+            BOOKSHELF
+          </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <a
-              href="#"
+            <Link
+              to="/"
               className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
             >
               Home
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/books"
               className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
             >
               Books
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/categories"
               className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
             >
               Categories
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/about"
               className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
             >
               About
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/contact"
               className="font-medium text-gray-700 hover:text-indigo-600 transition-colors"
             >
               Contact
-            </a>
+            </Link>
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Search */}
             <div className="hidden lg:block relative">
               <input
                 type="text"
@@ -174,8 +227,12 @@ const Navbar = () => {
               </svg>
             </div>
 
-            {/* Cart */}
-            <button className="relative p-2">
+            {/* Fixed Cart Button */}
+            <button 
+              onClick={handleCartClick}
+              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors duration-300" 
+              title={user ? "Go to Cart" : "Login to view cart"}
+            >
               <svg
                 className="w-6 h-6 text-gray-700 hover:text-indigo-600 transition-colors duration-300"
                 fill="none"
@@ -189,26 +246,25 @@ const Navbar = () => {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"
                 />
               </svg>
-              <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span>
+              {user && cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
+                </span>
+              )}
             </button>
 
-            {/* ✅ Updated: Clickable Profile section */}
             {user ? (
               <div
                 className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors duration-200"
-                onClick={handleAvatarClick} // ✅ Added: Click handler
-                title="Go to Dashboard" // ✅ Added: Tooltip
+                onClick={handleAvatarClick}
+                title="Go to Dashboard"
               >
-                {/* Profile Avatar */}
                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium hover:bg-indigo-700 transition-colors duration-200">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden sm:block text-gray-700 font-medium hover:text-indigo-600 transition-colors duration-200">
                   Hi, {user.name}
                 </span>
-                {/* ✅ Added: Dashboard icon indicator */}
                 <svg
                   className="w-4 h-4 text-gray-400 hidden sm:block"
                   fill="none"
@@ -224,14 +280,13 @@ const Navbar = () => {
                 </svg>
               </div>
             ) : (
-              <a href="/login">
+              <Link to="/login">
                 <button className="px-6 py-2 rounded-full font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                   Sign In
                 </button>
-              </a>
+              </Link>
             )}
 
-            {/* Mobile menu button */}
             <button
               onClick={() => setOpen(!open)}
               className="md:hidden p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-gray-100 transition-colors duration-300"
@@ -263,49 +318,68 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="md:hidden bg-white border-t shadow-lg">
           <div className="px-4 py-6 space-y-4">
-            <a
-              href="#"
+            <Link
+              to="/"
+              onClick={() => setOpen(false)}
               className="block text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
             >
               Home
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/books"
+              onClick={() => setOpen(false)}
               className="block text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
             >
               Books
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/categories"
+              onClick={() => setOpen(false)}
               className="block text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
             >
               Categories
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setOpen(false)}
               className="block text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
             >
               About
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => setOpen(false)}
               className="block text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
             >
               Contact
-            </a>
+            </Link>
 
-            {/* ✅ Updated: Mobile profile section with dashboard navigation */}
+            {/* Mobile Cart Link */}
+            <button
+              onClick={() => {
+                handleCartClick();
+                setOpen(false);
+              }}
+              className="flex items-center justify-between w-full text-gray-700 hover:text-indigo-600 py-2 font-medium transition-colors"
+            >
+              <span>Cart</span>
+              {user && cartItemCount > 0 && (
+                <span className="bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
+                </span>
+              )}
+            </button>
+
             <div className="pt-4 border-t border-gray-100">
               {user ? (
                 <div
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200"
                   onClick={() => {
                     handleAvatarClick();
-                    setOpen(false); // Close mobile menu
+                    setOpen(false);
                   }}
                 >
                   <div className="flex items-center space-x-3">
@@ -331,11 +405,11 @@ const Navbar = () => {
                   </svg>
                 </div>
               ) : (
-                <a href="/login" onClick={() => setOpen(false)}>
+                <Link to="/login" onClick={() => setOpen(false)}>
                   <button className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-300">
                     Sign In
                   </button>
-                </a>
+                </Link>
               )}
             </div>
           </div>

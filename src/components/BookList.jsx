@@ -1,13 +1,29 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Edit, Trash2, Eye } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 function BookTable() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get user info from token
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        navigate("/login");
+      }
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -18,14 +34,14 @@ function BookTable() {
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:5000/api/books/showBooks",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        let endpoint = "/books/showBooks";
+        
+        // If user is seller, fetch only their books
+        if (user && user.role === "seller") {
+          endpoint = `/books/showBooksBySeller/${user.id}`;
+        }
+
+        const response = await axiosInstance.get(endpoint);
 
         console.log("Books data:", response.data);
         setBooks(response.data);
@@ -42,8 +58,11 @@ function BookTable() {
       }
     };
 
-    fetchBooks();
-  }, [navigate]);
+    // Only fetch books after user info is loaded
+    if (user) {
+      fetchBooks();
+    }
+  }, [navigate, user]);
 
   const handleDelete = async (bookId) => {
     if (!window.confirm("Are you sure you want to delete this book?")) {
@@ -51,17 +70,7 @@ function BookTable() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:5000/api/books/deleteBook/${bookId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Remove book from state
+      await axiosInstance.delete(`/books/deleteBook/${bookId}`);
       setBooks(books.filter((book) => book._id !== bookId));
     } catch (error) {
       console.error("Error deleting book:", error);
@@ -97,9 +106,14 @@ function BookTable() {
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
         <BookOpen size={48} className="mx-auto text-gray-400 mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No Books Found
+          {user?.role === "seller" ? "No Books Added Yet" : "No Books Found"}
         </h3>
-        <p className="text-gray-500">No books are available at the moment.</p>
+        <p className="text-gray-500">
+          {user?.role === "seller" 
+            ? "You haven't added any books yet. Start by adding your first book!" 
+            : "No books are available at the moment."
+          }
+        </p>
       </div>
     );
   }
@@ -108,7 +122,16 @@ function BookTable() {
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <p className="text-sm text-gray-600">Total: {books.length} books</p>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-600">
+            {user?.role === "seller" ? "My Books: " : "Total: "}{books.length} books
+          </p>
+          {user?.role === "seller" && (
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              Seller Dashboard
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -134,9 +157,11 @@ function BookTable() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Rating
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Seller
-              </th>
+              {user?.role !== "seller" && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Seller
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -149,16 +174,30 @@ function BookTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12">
-                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                      {book.coverImage ? (
+                        <img
+                          src={`http://localhost:5000/images/books/${book.coverImage}`}
+                          alt={book.title}
+                          className="h-12 w-12 rounded-lg object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div 
+                        className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"
+                        style={{display: book.coverImage ? 'none' : 'flex'}}
+                      >
                         <BookOpen size={20} className="text-white" />
                       </div>
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
-                        {book.title}
+                        {book.title || "Untitled"}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Added: {new Date(book.createdAt).toLocaleDateString()}
+                        Added: {book.createdAt ? new Date(book.createdAt).toLocaleDateString() : "Unknown"}
                       </div>
                     </div>
                   </div>
@@ -166,22 +205,24 @@ function BookTable() {
 
                 {/* Author */}
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{book.author}</div>
+                  <div className="text-sm text-gray-900">
+                    {book.author || "Unknown Author"}
+                  </div>
                 </td>
 
                 {/* Category */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {book.category}
+                    {book.category || "Uncategorized"}
                   </span>
                 </td>
 
                 {/* Price */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    ${book.price.toFixed(2)}
+                    ₹{book.price ? Number(book.price).toFixed(2) : "0.00"}
                   </div>
-                  {book.discount > 0 && (
+                  {book.discount && book.discount > 0 && (
                     <div className="text-xs text-red-500">
                       {book.discount}% off
                     </div>
@@ -192,14 +233,14 @@ function BookTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      book.stock > 10
+                      (book.stock || 0) > 10
                         ? "bg-green-100 text-green-800"
-                        : book.stock > 0
+                        : (book.stock || 0) > 0
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {book.stock} units
+                    {book.stock || 0} units
                   </span>
                 </td>
 
@@ -207,21 +248,23 @@ function BookTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <span className="text-sm text-gray-900">
-                      {book.rating.toFixed(1)}
+                      {book.rating ? Number(book.rating).toFixed(1) : "0.0"}
                     </span>
                     <span className="text-yellow-400 ml-1">★</span>
                   </div>
                 </td>
 
-                {/* Seller */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {book.seller?.name || "Unknown"}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {book.seller?.email || ""}
-                  </div>
-                </td>
+                {/* Seller - Only show if user is not seller */}
+                {user?.role !== "seller" && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {book.seller?.name || "Unknown"}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {book.seller?.email || ""}
+                    </div>
+                  </td>
+                )}
 
                 {/* Actions */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -232,19 +275,24 @@ function BookTable() {
                     >
                       <Eye size={16} />
                     </button>
-                    <button
-                      className="text-green-600 hover:text-green-900 transition-colors"
-                      title="Edit Book"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(book._id)}
-                      className="text-red-600 hover:text-red-900 transition-colors"
-                      title="Delete Book"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {/* Only show edit/delete for sellers on their own books or admin */}
+                    {(user?.role === "seller" || user?.role === "admin") && (
+                      <>
+                        <button
+                          className="text-green-600 hover:text-green-900 transition-colors"
+                          title="Edit Book"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(book._id)}
+                          className="text-red-600 hover:text-red-900 transition-colors"
+                          title="Delete Book"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -2,7 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import { useEffect, useState } from "react";
-import { Star, DollarSign, Search, CircleChevronRight } from "lucide-react";
+import {
+  Star,
+  DollarSign,
+  Search,
+  CircleChevronRight,
+  Eye,
+} from "lucide-react";
 
 function ShowBooks() {
   const [books, setBooks] = useState([]);
@@ -40,6 +46,23 @@ function ShowBooks() {
     fetchBooks();
   }, [navigate]);
 
+  const handleAddToCart = async (bookId) => {
+    try {
+      const endpoint = "/cart/addToCart"; 
+      await axiosInstance.post(endpoint, {
+        bookId,
+        quantity: 1, 
+      });
+      alert("Book added to cart successfully!");
+    } catch (error) {
+      console.error("Error adding book to cart:", error);
+      alert("Failed to add book to cart.");
+    }
+  };
+  const handleViewDetails = (id) => {
+    navigate(`/bookDetail/${id}`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -58,8 +81,8 @@ function ShowBooks() {
   }
 
   return (
-    <div className="min-h-screen flex pt-16">
-      <aside className="w-80 h-[100vh] mt-4 bg-white p-6 shadow-xs border-r border-gray-200">
+    <div className="min-h-screen flex pt-16 bg-zinc-100">
+      <aside className="w-80 h-[100vh] mt-2 bg-white p-6 shadow-xs border-r border-gray-200">
         <h2 className="text-2xl font-bold mb-6">Filter Books</h2>
         <div className="space-y-6">
           <div>
@@ -124,7 +147,8 @@ function ShowBooks() {
             books.map((book) => (
               <div
                 key={book._id}
-                className="flex gap-8  bg-white p-4 rounded-sm shadow-sm "
+                className="flex gap-8 bg-white p-4 rounded-sm shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                onClick={() => handleViewDetails(book._id)}
               >
                 <img
                   src={`http://localhost:5000/images/books/${book.coverImage}`}
@@ -136,7 +160,9 @@ function ShowBooks() {
                   }}
                 />
                 <div className="flex-1">
-                  <h3 className="text-3xl font-semibold mb-2">{book.title}</h3>
+                  <h3 className="text-3xl font-semibold mb-2 hover:text-blue-600 transition-colors">
+                    {book.title}
+                  </h3>
                   <p className="text-gray-600 mb-2 text-lg">by {book.author}</p>
                   <p className="text-gray-700 mb-4 leading-relaxed">
                     {book.description}
@@ -172,9 +198,28 @@ function ShowBooks() {
                       </p>
                     </div>
 
-                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium">
-                      Add to Cart
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click
+                          handleViewDetails(book._id);
+                        }}
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-300 font-medium flex items-center gap-2"
+                      >
+                        <Eye size={18} />
+                        View Details
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click
+                          handleAddToCart(book._id); // Call the function you defined
+                        }}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

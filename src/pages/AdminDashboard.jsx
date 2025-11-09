@@ -172,8 +172,8 @@ function Dashboard() {
   }
 
   return (
-    <div className="flex">
-      <Sidebar expanded={sidebarExpanded} onExpandedChange={setSidebarExpanded}>
+    <div className="flex ">
+      <Sidebar expanded={sidebarExpanded} onExpandedChange={setSidebarExpanded} className >
         <SidebarItem
           text="Dashboard"
           icon={<LayoutDashboard />}
